@@ -42,7 +42,6 @@ class Search {
   noSolutionHandler() {
     console.log("Comida não encontrada :(");
     this.noSolution = true;
-    noLoop();
   }
 }
 
