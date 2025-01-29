@@ -1,319 +1,162 @@
-class Search{
-  constructor(gridMap){
+class Search {
+  constructor(gridMap) {
     this.gridMap = gridMap;
-    
-    // defines the start and the end position of the search
-    let agent = this.gridMap.agent;
-    let food = this.gridMap.food;
-    this.startTile = this.gridMap.map[agent.i][agent.j];
-    this.endTile = this.gridMap.map[food.i][food.j];  
-    
-    // used to determine the current tile that is visited
+    this.startTile = this.gridMap.map[gridMap.agent.i][gridMap.agent.j];
+    this.endTile = this.gridMap.map[gridMap.food.i][gridMap.food.j];
     this.currentTile = gridMap.currentTileOfSearch;
-    
-    // auxiliary queue for the visited tiles
-    this.queue = [];
-    
-    // flag to check if the search found the food
+    this.queue = [this.startTile];
     this.found = false;
-    
-    // marks the position of the start tile
-    this.queue.push(this.startTile);
+    this.noSolution = false;
+
     this.startTile.marked = true;
-    
   }
 
-  distance(a , b){
+  distance(a, b) {
     return dist(a.i, a.j, b.i, b.j);
   }
-}
 
-class BFS extends Search{
-  constructor(gridMap){
-    super(gridMap);    
+  processCurrentTile() {
+    this.currentTile = this.queue.shift();
+    this.currentTile.marked = false;
+    this.currentTile.visited = true;
   }
-    
-    // BFS
-  find(){
-    
-    // Are there any option left to search?
-    if(this.queue.length > 0){
-      
-      // Have I found the food?
-      if(this.currentTile !== this.endTile){
-        // visits the first tile of the queue 
-        this.currentTile = this.queue.shift();
-        this.currentTile.marked = false;
-        this.currentTile.visited = true;
 
-        // marks all the neighbors from the tile that can be marked
-        let neighbors = this.currentTile.neighbors;
-        for(let neighbor of neighbors){
-            if(!neighbor.marked &&  !neighbor.visited && neighbor.cost != -1){
-                neighbor.previous = this.currentTile;
-                this.queue.push(neighbor);
-                neighbor.marked = true;
-            }
-        }    
-      }
-      // Found the food
-      // Change the found flag and change to traversal state
-      else{
-        console.log("Food found!!!")
-        this.found = true;
-        return
+  processNeighbors(callback) {
+    for (let neighbor of this.currentTile.neighbors) {
+      if (!neighbor.marked && !neighbor.visited && neighbor.cost !== -1) {
+        callback(neighbor);
+        neighbor.marked = true;
       }
     }
-    // No possible solution
-    // Stops the execution
-    else{
-      console.log("No solution found");
-      noLoop();
-      return;
-    }
   }
 
-}
-
-class DFS extends Search{
-   constructor(gridMap){
-     super(gridMap);
-   }
-   find(){ //TODO: needs implementation
-     if(this.queue.length > 0){
-       if(this.currentTile !== this.endTile){
-        this.currentTile = this.queue.shift();
-        this.currentTile.marked = false;
-        this.currentTile.visited = true;
-        
-        let neighbors = this.currentTile.neighbors;
-        for(let neighbor of neighbors){
-            if(!neighbor.marked &&  !neighbor.visited && neighbor.cost != -1){
-              neighbor.previous = this.currentTile;
-              neighbor.marked = true;
-              this.queue.unshift(neighbor);
-            }
-       }
-     }
-     else{
-        console.log("Food found!!!")
-        this.found = true;
-        return;
-     }
-   }
-     else{
-      console.log("No solution found");
-      noLoop();
-      return;
+  checkSolution() {
+    if (this.currentTile === this.endTile) {
+      console.log("Comida encontrada");
+      this.found = true;
+      return true;
     }
- }
+    return false;
+  }
+
+  noSolutionHandler() {
+    console.log("Comida não encontrada :(");
+    this.noSolution = true;
+  }
 }
 
-class Greedy extends Search{
-  constructor(gridMap){
-     super(gridMap);
-     this.startTile.h = this.distance(this.startTile, this.endTile);
+class BFS extends Search {
+  find() {
+    if (this.queue.length > 0) {
+      if (!this.checkSolution()) {
+        this.processCurrentTile();
+        this.processNeighbors((neighbor) => {
+          neighbor.previous = this.currentTile;
+          this.queue.push(neighbor);
+        });
+      }
+    } else {
+      this.noSolutionHandler();
+    }
   }
-  find(){ 
-    if(this.queue.length > 0){
-      this.queue.sort(this.compare);
-      
-      if(this.currentTile !== this.endTile){
-        this.currentTile = this.queue.shift();
-        this.currentTile.marked = false;
-        this.currentTile.visited = true;
+}
 
-        let neighbors = this.currentTile.neighbors;
-        for(let neighbor of neighbors){
-          
-          if(!neighbor.visited){
-            let tempDistance = this.distance(this.currentTile, this.endTile);
-            let newPath = false;
+class DFS extends Search {
+  find() {
+    if (this.queue.length > 0) {
+      if (!this.checkSolution()) {
+        this.processCurrentTile();
+        this.processNeighbors((neighbor) => {
+          neighbor.previous = this.currentTile;
+          this.queue.unshift(neighbor);
+        });
+      }
+    } else {
+      this.noSolutionHandler();
+    }
+  }
+}
 
-            if(neighbor.marked){
-              if(tempDistance < neighbor.h){
-                neighbor.h = tempDistance;
-                newPath = true;
-              }
-            }
-            else{
-              neighbor.h = tempDistance;
-              this.queue.push(neighbor);
-              neighbor.marked = true;
-              newPath = true;
-            }
-            if(newPath){
-              neighbor.previous = this.currentTile;
-            }
+class Greedy extends Search {
+  constructor(gridMap) {
+    super(gridMap);
+    this.startTile.h = this.distance(this.startTile, this.endTile);
+  }
+
+  find() {
+    if (this.queue.length > 0) {
+      this.queue.sort((a, b) => a.h - b.h);
+      if (!this.checkSolution()) {
+        this.processCurrentTile();
+        this.processNeighbors((neighbor) => {
+          let tempDistance = this.distance(this.currentTile, this.endTile);
+          if (!neighbor.marked || tempDistance < neighbor.h) {
+            neighbor.h = tempDistance;
+            neighbor.previous = this.currentTile;
+            this.queue.push(neighbor);
           }
-        }
+        });
       }
-      else{
-        console.log("Food found!!!")
-        this.found = true;
-        return;
-      }
+    } else {
+      this.noSolutionHandler();
     }
-    else{
-      console.log("No solution found");
-      noLoop();
-      return;
-    }
-  }
-  
-  distance(a , b){
-    return super.distance(a,b);
-  }
-  
-  compare(a, b){
-    if(a.h < b.h){
-      return -1;
-    }
-    if(a.h > b.h){
-      return 1;
-    }
-    return 0;
   }
 }
 
-class UniformCost extends Search{
-  constructor(gridMap){
+class UniformCost extends Search {
+  constructor(gridMap) {
     super(gridMap);
     this.startTile.g = this.startTile.cost;
   }
-  find(){ 
-    if(this.queue.length > 0){
-      this.queue.sort(this.compare);
-      
-      if(this.currentTile !== this.endTile){
-        this.currentTile = this.queue.shift();
-        this.currentTile.marked = false;
-        this.currentTile.visited = true;
 
-        let neighbors = this.currentTile.neighbors;
-        for(let neighbor of neighbors){
-          
-          if(!neighbor.visited){
-            let tempDistance = this.currentTile.g + neighbor.cost;
-            let newPath = false;
-
-            if(neighbor.marked){
-              if(tempDistance < neighbor.g){
-                neighbor.g = tempDistance;
-                newPath = true;
-              }
-            }
-            else{
-              neighbor.g = tempDistance;
-              this.queue.push(neighbor);
-              neighbor.marked = true;
-              newPath = true;
-            }
-            if(newPath){
-              neighbor.previous = this.currentTile;
-            }
+  find() {
+    if (this.queue.length > 0) {
+      this.queue.sort((a, b) => a.g - b.g);
+      if (!this.checkSolution()) {
+        this.processCurrentTile();
+        this.processNeighbors((neighbor) => {
+          let tempDistance = this.currentTile.g + neighbor.cost;
+          if (!neighbor.marked || tempDistance < neighbor.g) {
+            neighbor.g = tempDistance;
+            neighbor.previous = this.currentTile;
+            this.queue.push(neighbor);
           }
-        }
+        });
       }
-      else{
-        console.log("Food found!!!")
-        this.found = true;
-        return;
-      }
-    }
-    else{
-      console.log("No solution found");
-      noLoop();
-      return;
+    } else {
+      this.noSolutionHandler();
     }
   }
+}
 
-  distance(a, b){
-    return super.distance(a,b);  
-  }
-
-  compare(a, b){
-    if(a.g < b.g){
-      return -1;
-    }
-    if(a.g > b.g){
-      return 1;
-    }
-    return 0;
-  }
-} 
-
-class AStar extends Search{
-  constructor(gridMap){
+class AStar extends Search {
+  constructor(gridMap) {
     super(gridMap);
     this.startTile.h = this.distance(this.startTile, this.endTile);
     this.startTile.g = this.startTile.cost;
     this.startTile.f = this.startTile.h + this.startTile.g;
   }
-  find(){ 
-    if(this.queue.length > 0){
-      this.queue.sort(this.compare);
-      
-      if(this.currentTile !== this.endTile){
-        this.currentTile = this.queue.shift();
-        this.currentTile.marked = false;
-        this.currentTile.visited = true;
 
-        let neighbors = this.currentTile.neighbors;
-        for(let neighbor of neighbors){
-          
-          if(!neighbor.visited){
-            let tempH = this.distance(this.currentTile, this.endTile);
-            let tempG = this.currentTile.g + neighbor.cost;
-            let tempF = tempH + tempG;
-            let newPath = false;
-
-            if(neighbor.marked){
-              if(tempF < neighbor.f){
-                neighbor.h = tempH;
-                neighbor.g = tempG;
-                neighbor.f = tempF;
-                newPath = true;
-              }
-            }
-            else{
-              neighbor.h = tempH;
-              neighbor.g = tempG;
-              neighbor.f = tempF;
-              this.queue.push(neighbor);
-              neighbor.marked = true;
-              newPath = true;
-            }
-            if(newPath){
-              neighbor.previous = this.currentTile;
-            }
+  find() {
+    if (this.queue.length > 0) {
+      this.queue.sort((a, b) => a.f - b.f);
+      if (!this.checkSolution()) {
+        this.processCurrentTile();
+        this.processNeighbors((neighbor) => {
+          let tempH = this.distance(this.currentTile, this.endTile);
+          let tempG = this.currentTile.g + neighbor.cost;
+          let tempF = tempH + tempG;
+          if (!neighbor.marked || tempF < neighbor.f) {
+            neighbor.h = tempH;
+            neighbor.g = tempG;
+            neighbor.f = tempF;
+            neighbor.previous = this.currentTile;
+            this.queue.push(neighbor);
           }
-        }
+        });
       }
-      else{
-        console.log("Food found!!!")
-        this.found = true;
-        return;
-      }
-    }
-    else{
-      console.log("No solution found");
-      noLoop();
-      return;
+    } else {
+      this.noSolutionHandler();
     }
   }
-
-  distance(a, b){
-    return super.distance(a, b);
-  }
-
-  compare(a, b){
-    if(a.f < b.f){
-      return -1;
-    }
-    if(a.f > b.f){
-      return 1;
-    }
-    return 0;
-  }
-} 
+}
