@@ -19,9 +19,7 @@ class GridMap{
         this.map[i][j] = new Tile(i, j);
       }
     }
-    
-    // Add the neighbors to each tile
-    
+        
     for(let i = 0; i < this.rows; i++){
       for(let j = 0; j <  this.cols; j++){
         this.map[i][j].addNeighbors(this.map, this.rows, this.cols);
