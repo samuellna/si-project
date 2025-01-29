@@ -92,6 +92,11 @@ function draw() {
       searchState = false;
       traverseState = true;
     }
+    else if(search.noSolution){
+      gridMap.clearMarkedAndVisited();
+      searchState = false;
+      endState = true;
+    }
     board.draw(gridMap.agent.count, foodEaten, searchType);
   }
   
