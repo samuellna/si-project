@@ -20,11 +20,16 @@ class Board {
     
     // Definição dos tipos de terreno e seus respectivos custos
     this.tiles = {
-      grass: new Tile(0, 0, 1),
-      sand: new Tile(0, 0, 5),
-      water: new Tile(0, 0, 10),
-      obstacle: new Tile(0, 0, -1)
+      grass: new Tile(0, 0),
+      sand: new Tile(0, 0),
+      water: new Tile(0, 0),
+      obstacle: new Tile(0, 0)
     };
+    this.tiles.grass.cost = 1;
+    this.tiles.sand.cost = 5;
+    this.tiles.water.cost = 10;
+    this.tiles.obstacle.cost = -1;
+
   }
 
   drawTable() {
