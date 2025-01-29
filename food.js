@@ -1,31 +1,30 @@
-class Food{
-  constructor(i, j){
-    // the tile where the food is located
+class Food {
+  constructor(i, j) {
+    // O tile onde a comida está localizada
     this.i = i;
     this.j = j;
   }
-  
-  // draws the food in the center of its tile as a circle
-  draw(cellWidth, cellHeight){
+
+  // Método auxiliar para desenhar a comida como um círculo
+  drawEllipse(x, y, width, height) {
     fill("yellow");
     strokeWeight(1);
     stroke("black");
-    ellipse(
+    ellipse(x, y, width, height);
+  }
+
+  // Desenha a comida no centro do tile
+  draw(cellWidth, cellHeight) {
+    this.drawEllipse(
       this.i * cellWidth + cellWidth / 2,
       this.j * cellHeight + cellHeight / 2, 
       cellWidth / 2, 
       cellHeight / 2
     );
   }
-  drawOnDescription(x, y, radius){
-    fill("yellow");
-    strokeWeight(1);
-    stroke("black");
-    ellipse(
-      x,
-      y, 
-      radius,
-      radius
-    );
+
+  // Desenha a comida na descrição
+  drawOnDescription(x, y, radius) {
+    this.drawEllipse(x, y, radius, radius);
   }
 }
