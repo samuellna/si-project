@@ -25,9 +25,9 @@ class Path{
         if (end) {
           let transparentColor = color("orange");
           transparentColor.setAlpha(150);
-          fill(transparentColor);
-          strokeWeight(1);
-          stroke("black");
+          // fill(transparentColor);
+          strokeWeight(5);
+          stroke("red");
           rect(cellWidth * this.route[i].i, this.route[i].j * cellHeight, cellWidth);   
         } else {
           vertex(this.route[i].i * cellWidth + cellWidth / 2,

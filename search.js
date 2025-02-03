@@ -13,7 +13,7 @@ class Search {
 
   distance(a, b) {
     // return dist(a.i, a.j, b.i, b.j);
-    return abs(a.i - a.j) + abs(b.i - b.j);
+    return Math.abs(a.i - b.i) + Math.abs(a.j - b.j);
   }
 
   processCurrentTile() {
