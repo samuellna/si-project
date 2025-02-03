@@ -12,7 +12,8 @@ class Search {
   }
 
   distance(a, b) {
-    return dist(a.i, a.j, b.i, b.j);
+    // return dist(a.i, a.j, b.i, b.j);
+    return abs(a.i - a.j) + abs(b.i - b.j);
   }
 
   processCurrentTile() {
@@ -133,24 +134,35 @@ class AStar extends Search {
   constructor(gridMap) {
     super(gridMap);
     this.startTile.h = this.distance(this.startTile, this.endTile);
-    this.startTile.g = this.startTile.cost;
-    this.startTile.f = this.startTile.h + this.startTile.g;
+    this.startTile.g = 0; // Custo inicial é zero
+    this.startTile.f = this.startTile.g + this.startTile.h;
+  }
+
+  distance(a, b) {
+    // Distância de Manhattan (correta agora)
+    return Math.abs(a.i - b.i) + Math.abs(a.j - b.j);
   }
 
   find() {
     if (this.queue.length > 0) {
+      // Ordena a fila de prioridade com base no menor f(n)
       this.queue.sort((a, b) => a.f - b.f);
+      
       if (!this.checkSolution()) {
         this.processCurrentTile();
+        
         this.processNeighbors((neighbor) => {
-          let tempH = this.distance(this.currentTile, this.endTile);
-          let tempG = this.currentTile.g + neighbor.cost;
-          let tempF = tempH + tempG;
+          let tempG = this.currentTile.g + neighbor.cost; // Custo do caminho
+          let tempH = this.distance(neighbor, this.endTile); // Distância heurística
+          let tempF = tempG + 5 * tempH; // Custo total estimado
+
+          // Se o vizinho ainda não foi marcado ou encontrou um caminho melhor
           if (!neighbor.marked || tempF < neighbor.f) {
-            neighbor.h = tempH;
             neighbor.g = tempG;
+            neighbor.h = tempH;
             neighbor.f = tempF;
             neighbor.previous = this.currentTile;
+            neighbor.marked = true;
             this.queue.push(neighbor);
           }
         });

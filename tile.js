@@ -54,7 +54,7 @@ class Tile{
   draw(cellWidth, cellHeight){
     strokeWeight(1);
     if(this.cost == -1){ // wall
-      fill("#5A5D63");  
+      fill('black');  
     }
     else if(this.cost == 1){ // Sand
       fill("#C2B280");
@@ -70,7 +70,9 @@ class Tile{
       fill("orange");
     }
     else if(this.checkStatus() == 2){ //visited
-      fill("white")
+      // fill("white")
+      strokeWeight(5);
+      stroke('white');      
     }
     rect(cellWidth * this. i, cellHeight * this. j, cellWidth);
   }
@@ -78,7 +80,7 @@ class Tile{
   drawOnDescription(x, y, cellWidth, cellHeight){
     strokeWeight(1);
     if(this.cost == -1){ // wall
-      fill("#5A5D63");  
+      fill('black');  
     }
     else if(this.cost == 1){ // Sand
       fill("#C2B280");
@@ -93,7 +95,7 @@ class Tile{
       fill("orange")
     }
     else if(this.checkStatus() == 2){ //visited
-      fill("white")
+      // fill("white")
     }
     rect(x, y, cellWidth);
   }
