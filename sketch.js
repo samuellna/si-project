@@ -162,7 +162,7 @@ function draw() {
       searchState = true;
     }
     if (keyIsDown(ENTER)) {
-      gridMap = new GridMap(20,20);
+      gridMap = new GridMap(20,15);
       searchType = 0;
       foodEaten = 0;
       endState = false;
